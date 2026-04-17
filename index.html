@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Tech Quiz</title>
+
+<style>
+body {
+  font-family: Arial;
+  background: #ffffff;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+.container {
+  width: 400px;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 0 20px rgba(128, 0, 128, 0.3);
+  text-align: center;
+}
+
+h1 { color: purple; }
+
+button {
+  background: purple;
+  color: white;
+  border: none;
+  padding: 10px;
+  margin-top: 10px;
+  width: 100%;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+button:hover { background: #6a0dad; }
+
+.option {
+  display: block;
+  margin: 10px 0;
+  padding: 10px;
+  border: 2px solid purple;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.option:hover { background: #f3e8ff; }
+
+input {
+  padding: 10px;
+  margin: 5px;
+  width: 90%;
+}
+
+.timer {
+  margin: 10px;
+  font-weight: bold;
+  color: purple;
+}
+
+/* animações */
+@keyframes flashTitle {
+  0% { opacity: 0; transform: scale(0.8); }
+  50% { opacity: 1; transform: scale(1.2); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+.flash { animation: flashTitle 1.5s ease; }
+
+@keyframes bounce {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.15); }
+  100% { transform: scale(1); }
+}
+
+.bounce { animation: bounce 0.3s; }
+</style>
+</head>
+
+<body>
+
+<div class="container" id="app"></div>
+
+<script>
+
+let user = "";
+let score = 0;
+let currentQuestion = 0;
+let time = 30;
+let timer;
+
+// 🔀 Função para embaralhar perguntas
+function shuffle(array) {
+  return array.sort(() => Math.random() - 0.5);
+}
+
+let questions = shuffle([
+  { q: "O que é Java?", a: ["Banco de dados", "Linguagem de programação", "Framework", "IDE"], correct: 1 },
+  { q: "O que é API?", a: ["Banco", "Interface de comunicação", "Sistema operacional", "Front-end"], correct: 1 },
+  { q: "HTML é usado para?", a: ["Estilizar", "Programar backend", "Estrutura de páginas", "Banco"], correct: 2 },
+  { q: "O que é Spring Boot?", a: ["Banco", "Framework Java", "IDE", "API"], correct: 1 },
+  { q: "O que é REST?", a: ["Banco", "Padrão de API", "Linguagem", "Framework"], correct: 1 },
+  { q: "O que é SQL?", a: ["Front", "Banco de dados", "Linguagem de consulta", "API"], correct: 2 },
+  { q: "JWT é usado para?", a: ["Estilo", "Autenticação", "Banco", "Frontend"], correct: 1 },
+  { q: "Docker serve para?", a: ["Criar sites", "Rodar containers", "Banco", "Design"], correct: 1 },
+  { q: "O que é microserviço?", a: ["App grande", "Sistema distribuído", "Banco", "Framework"], correct: 1 },
+  { q: "Clean Code significa?", a: ["Código bonito", "Código limpo e legível", "Código rápido", "Código pequeno"], correct: 1 }
+]);
+
+function loginScreen() {
+  document.getElementById("app").innerHTML = `
+    <h1>Tech Quiz</h1>
+    <input id="name" placeholder="Seu nome">
+    <input id="password" type="number" placeholder="Senha numérica">
+    <button onclick="startQuiz()">Entrar</button>
+  `;
+}
+
+function startQuiz() {
+  const name = document.getElementById("name").value;
+  const pass = document.getElementById("password").value;
+
+  if (!name || !pass) {
+    alert("Preencha todos os campos");
+    return;
+  }
+
+  user = name;
+
+  document.getElementById("app").innerHTML = `
+    <h1 class="flash">🚀 Tech Quiz</h1>
+  `;
+
+  setTimeout(() => {
+    showQuestion();
+  }, 1500);
+}
+
+function showQuestion() {
+  clearInterval(timer);
+  time = 30;
+
+  const q = questions[currentQuestion];
+
+  document.getElementById("app").innerHTML = `
+    <h2>${q.q}</h2>
+    <div class="timer">Tempo: <span id="time">${time}</span>s</div>
+    ${q.a.map((opt, i) => `
+      <div class="option" onclick="answer(${i})">${opt}</div>
+    `).join("")}
+  `;
+
+  timer = setInterval(() => {
+    time--;
+    document.getElementById("time").innerText = time;
+
+    if (time <= 0) {
+      nextQuestion();
+    }
+  }, 1000);
+}
+
+function answer(index) {
+  const options = document.querySelectorAll(".option");
+  options[index].classList.add("bounce");
+
+  setTimeout(() => {
+    if (index === questions[currentQuestion].correct) {
+      score++;
+    }
+    nextQuestion();
+  }, 300);
+}
+
+function nextQuestion() {
+  currentQuestion++;
+  if (currentQuestion < questions.length) {
+    showQuestion();
+  } else {
+    showResult();
+  }
+}
+
+function showResult() {
+  let message = "";
+
+  if (score >= 6) {
+    message = `
+      🎉 Uhuul, você já é considerado um programador!
+    `;
+  } else {
+    message = `
+      😢 Não foi dessa vez... vamos tentar novamente?
+    `;
+  }
+
+  document.getElementById("app").innerHTML = `
+    <h1>Resultado</h1>
+    <p>${user}, você acertou ${score} de 10</p>
+    <h2>${message}</h2>
+    <button onclick="location.reload()">Jogar novamente</button>
+  `;
+}
+
+loginScreen();
+
+</script>
+
+</body>
+</html>
